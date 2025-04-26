@@ -61,5 +61,7 @@ for message in pubsub.listen():
         data = json.loads(message['data'])
         query = data['query']
         print(query, flush=True)
+        start = time.time()
         embedding = encode_sentences([query])[0]
+        print(time.time() - start, flush=True)
         r.publish('embed_output', json.dumps({'query': query, 'embedding': embedding}))

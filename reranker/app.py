@@ -17,7 +17,11 @@ for message in pubsub.listen():
         pairs = [
             (query, f"{product['title']} | {product['description']} | {product['brand']}") for product in products
         ]
+        start = time.time()
         scores = [float(score) for score in model.predict(pairs)]
+        print(time.time() - start, flush=True)
+        for product in products:
+            product.pop('description', None)
         ranked = sorted(zip(products, scores), key=lambda x: -x[1])[:5]
         # print("Top results:", ranked, flush=True)
         r.publish('reranker_output', json.dumps({'results': ranked}))
