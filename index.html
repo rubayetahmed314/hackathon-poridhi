@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Product Search Results</title>
+    <script src="https://cdn.socket.io/4.6.0/socket.io.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        #search-container {
+            margin-bottom: 30px;
+        }
+
+        #query {
+            padding: 8px;
+            width: 400px;
+            font-size: 16px;
+        }
+
+        button {
+            padding: 8px 16px;
+            font-size: 16px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #45a049;
+        }
+
+        #results-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: flex-start;
+        }
+
+        .product-card {
+            width: 200px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+            transition: transform 0.2s;
+        }
+
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .product-image {
+            width: 100%;
+            height: 200px;
+            object-fit: contain;
+            background: #f9f9f9;
+            padding: 10px 0;
+        }
+
+        .product-info {
+            padding: 10px;
+            text-align: center;
+        }
+
+        .product-sku {
+            display: block;
+            color: #2962ff;
+            text-decoration: none;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .product-price {
+            font-size: 18px;
+            color: #333;
+        }
+
+        #loading {
+            display: none;
+            margin: 20px 0;
+            font-style: italic;
+            color: #666;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Product Search</h1>
+    
+    <div id="search-container">
+        <input id="query" type="text" placeholder="Search for products..." />
+        <button onclick="sendQuery()">Search</button>
+    </div>
+
+    <div id="loading">Searching for products...</div>
+    
+    <div id="results-container"></div>
+
+    <script>
+        console.log(window.location.origin);
+        const socket = io("https://67dc4d03e3ee28702cb2ecfb-lb-896.bm-southwest.lab.poridhi.io");
+        const resultsContainer = document.getElementById("results-container");
+        const loadingIndicator = document.getElementById("loading");
+
+        socket.on("connect", () => {
+            console.log("Connected to backend");
+        });
+
+        socket.on("result", data => {
+            console.log("Received result:", data);
+            displayResults(data);
+            loadingIndicator.style.display = "none";
+        });
+
+        function sendQuery() {
+            const query = document.getElementById("query").value;
+            if (!query.trim()) return;
+            
+            resultsContainer.innerHTML = "";
+            loadingIndicator.style.display = "block";
+            socket.emit("query", { query });
+        }
+
+        function displayResults(data) {
+            resultsContainer.innerHTML = "";
+            
+            if (!data.results || data.results.length === 0) {
+                resultsContainer.innerHTML = "<p>No products found.</p>";
+                return;
+            }
+
+            data.results.forEach(item => {
+                const product = item[0]; // Get the product object
+                
+                const card = document.createElement("div");
+                card.className = "product-card";
+                
+                // // Create product image
+                // const img = document.createElement("img");
+                // img.src = product.image_url;
+                // img.alt = product.title;
+                // img.className = "product-image";
+                // img.onerror = function() {
+                //     this.src = "https://via.placeholder.com/200x200?text=No+Image";
+                // };
+                
+                // Create product info section
+                const infoDiv = document.createElement("div");
+                infoDiv.className = "product-info";
+
+                // Create SKU (hyperlinked)
+                const skuSpan = document.createElement("span");
+                // skuLink.href = product.product_url;
+                // skuLink.target = "_blank";
+                // skuLink.className = "product-sku";
+                skuSpan.textContent = product.title;
+                
+                // // Create SKU (hyperlinked)
+                // const skuLink = document.createElement("a");
+                // skuLink.href = product.product_url;
+                // skuLink.target = "_blank";
+                // skuLink.className = "product-sku";
+                // skuLink.textContent = `SKU: ${product.sku}`;
+                
+                // // Create price
+                // const priceElem = document.createElement("div");
+                // priceElem.className = "product-price";
+                // priceElem.textContent = `${product.price}`;
+                
+                // Assemble the card
+                infoDiv.appendChild(skuSpan);
+                // infoDiv.appendChild(priceElem);
+                
+                // card.appendChild(img);
+                card.appendChild(infoDiv);
+                
+                resultsContainer.appendChild(card);
+            });
+        }
+
+        // Handle Enter key press in search input
+        document.getElementById("query").addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                sendQuery();
+            }
+        });
+    </script>
+</body>
+
+</html>

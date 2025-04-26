@@ -1,0 +1,4 @@
+redis==5.2.1
+numpy==1.26.4
+qdrant-client==1.14.2
+elasticsearch==8.10.1
